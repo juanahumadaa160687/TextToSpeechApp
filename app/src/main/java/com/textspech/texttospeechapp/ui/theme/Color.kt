@@ -2,10 +2,12 @@ package com.textspech.texttospeechapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val primaryColor = Color(0xFF224876)
+val secondaryColor = Color(0xFF1b3b61)
+val tertiaryColor = Color(0xFF142e4e)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val backgroundColor = Color(0xFFffffff)
+val surfaceColor = Color(0xFFf2f2f2)
+val surfaceContainerColor = Color(0xFFe4e4e4)
+
+val ctaColor = Color(0xFF2a568b)
