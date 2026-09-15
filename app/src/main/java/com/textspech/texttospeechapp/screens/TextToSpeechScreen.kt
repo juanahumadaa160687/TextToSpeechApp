@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationItemColors
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
@@ -67,15 +69,15 @@ fun TextToSpeechScreen(navController: NavController, user: Int?) {
     val phraseState = rememberTextFieldState()
 
     val navItems = listOf(
-        NavItem("Voz a\nTexto", "speech-to-text?user={id}", R.drawable.ic_microphone),
         NavItem("Texto a\nVoz", "text-to-speech?user={id}", R.drawable.ic_text),
+        NavItem("Voz a\nTexto", "speech-to-text?user={id}", R.drawable.ic_microphone),
         NavItem("Cerrar\nSesión", "index", R.drawable.ic_logout),
     )
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val state = rememberNavigationSuiteScaffoldState()
 
-    val user = users.find { it.id == 1 }
+    val user = users.find { it.id == user }
 
     val context = LocalContext.current
     var textToSpeak by remember { mutableStateOf("") }
@@ -140,157 +142,163 @@ fun TextToSpeechScreen(navController: NavController, user: Int?) {
             }
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).nestedScroll(scrollBehavior.nestedScrollConnection),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            MediumTopAppBar(
-                title = {
-                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                        Text(
-                            text = "Texto a voz",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = colorResource(id = R.color.secondary_text_color)
-                        )
-                        Text(
-                            text = "Convierte tus frases de texto a voz",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().background(colorResource(id = R.color.surface_color)),
-                navigationIcon = {
-                    IconButton( onClick = { navController.popBackStack() } ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Volver",
-                            modifier = Modifier.size(24.dp),
-                            tint = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.cta_color),
-                    titleContentColor = colorResource(id = R.color.secondary_text_color),
-                    navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    actionIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    scrolledContainerColor = colorResource(id = R.color.cta_color),
-                    subtitleContentColor = colorResource(id = R.color.secondary_text_color)
-                ),
-                scrollBehavior = scrollBehavior,
-            )
+        Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        ) { innerPadding ->
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+            Column(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(innerPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
             ) {
-                item {
-                    OutlinedTextField(
-                        value = textToSpeak,
-                        onValueChange = { textToSpeak = it },
-                        label = { Text("Texto a convertir a voz") },
-                        modifier = Modifier.padding(16.dp)
-                    )
+                TopAppBar(
+                    title = {
+                        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                            Text(
+                                text = "Hola ${user?.firstname}",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = colorResource(id = R.color.secondary_text_color)
+                            )
+                            Text(
+                                text = "Convierte tus frases de texto a voz",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colorResource(id = R.color.secondary_text_color)
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().background(colorResource(id = R.color.surface_color)),
+                    navigationIcon = {
+                        IconButton( onClick = { navController.popBackStack() } ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = "Volver",
+                                modifier = Modifier.size(24.dp),
+                                tint = colorResource(id = R.color.secondary_text_color)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = colorResource(id = R.color.cta_color),
+                        titleContentColor = colorResource(id = R.color.secondary_text_color),
+                        navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        actionIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        scrolledContainerColor = colorResource(id = R.color.cta_color),
+                        subtitleContentColor = colorResource(id = R.color.secondary_text_color)
+                    ),
+                    scrollBehavior = scrollBehavior,
+                )
 
-                    Spacer(modifier = Modifier.padding(24.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item {
+                        OutlinedTextField(
+                            value = textToSpeak,
+                            onValueChange = { textToSpeak = it },
+                            label = { Text("Texto a convertir a voz") },
+                            modifier = Modifier.padding(16.dp)
+                        )
 
-                    Button(
-                        onClick = {
-                            if (isInitialized) {
-                                textToSpeech?.speak(
-                                    textToSpeak,
-                                    TextToSpeech.QUEUE_FLUSH,
-                                    null,
-                                    null
-                                )
-                            }
-                        },
-                        enabled = isInitialized && textToSpeak.isNotBlank()
-                    ) {
-                        Text("Convertir a voz")
-                    }
+                        Spacer(modifier = Modifier.padding(24.dp))
 
-                    Spacer(modifier = Modifier.padding(24.dp))
+                        Button(
+                            onClick = {
+                                if (isInitialized) {
+                                    textToSpeech?.speak(
+                                        textToSpeak,
+                                        TextToSpeech.QUEUE_FLUSH,
+                                        null,
+                                        null
+                                    )
+                                }
+                            },
+                            enabled = isInitialized && textToSpeak.isNotBlank()
+                        ) {
+                            Text("Convertir a voz")
+                        }
 
-                    recordedPhrases.forEach { phrase ->
-                        if (phrase.user.id == user?.id) {
-                            phrase.phrases.forEach { recordedPhrase ->
-                                Text(
-                                    text = recordedPhrase,
-                                    color = Color.Black,
-                                    modifier = Modifier.padding(8.dp).clickable {
-                                        textToSpeak = recordedPhrase
-                                    },
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.padding(8.dp))
+                        Spacer(modifier = Modifier.padding(24.dp))
+
+                        recordedPhrases.forEach { phrase ->
+                            if (phrase.user.id == user?.id) {
+                                phrase.phrases.forEach { recordedPhrase ->
+                                    Text(
+                                        text = recordedPhrase,
+                                        color = Color.Black,
+                                        modifier = Modifier.padding(8.dp).clickable {
+                                            textToSpeak = recordedPhrase
+                                        },
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.padding(8.dp))
+                                }
                             }
                         }
                     }
-                }
-                item {
-                    Spacer(modifier = Modifier.padding(24.dp))
+                    item {
+                        Spacer(modifier = Modifier.padding(24.dp))
 
-                    TextField(
-                        state = phraseState,
-                        label = { Text("Ingrese una frase") },
-                        placeholder = { Text("Ingrese una frase") },
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = colorResource(id = R.color.tertiary_color),
-                            unfocusedTextColor = colorResource(id = R.color.primary_color),
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                            unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                            focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                            unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                            focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                            unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                            focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                            unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                        ),
-                        trailingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_clear),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp).clickable(onClick = {phraseState.clearText()}),
-                                tint = colorResource(id = R.color.primary_color)
+                        TextField(
+                            state = phraseState,
+                            label = { Text("Ingrese una frase") },
+                            placeholder = { Text("Ingrese una frase") },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                            ),
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_clear),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp).clickable(onClick = {phraseState.clearText()}),
+                                    tint = colorResource(id = R.color.primary_color)
+                                )
+                            },
+                        )
+
+                        Spacer(modifier = Modifier.padding(20.dp))
+
+                        Button(
+                            onClick = {
+                                recordedPhrases.find { it.user.id == user?.id }?.phrases?.add(phraseState.text.toString())
+                                phraseState.clearText()
+                                navController.navigate("text-to-speech?user=${user?.id}")
+                            },
+                            modifier = Modifier.width(200.dp).height(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.cta_color),
                             )
-                        },
-                    )
+                        ) {
+                            Text(text = "Guardar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
 
-                    Spacer(modifier = Modifier.padding(20.dp))
+                        Spacer(modifier = Modifier.padding(20.dp))
 
-                    Button(
-                        onClick = {
-                            recordedPhrases.find { it.user.id == user?.id }?.phrases?.add(phraseState.toString())
-                            phraseState.clearText()
-                        },
-                        modifier = Modifier.width(200.dp).height(56.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(id = R.color.cta_color),
-                        )
-                    ) {
-                        Text(text = "Guardar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.padding(20.dp))
-
-                    Button(
-                        onClick = {
-                            recordedPhrases.find { it.user.id == user?.id }?.phrases?.clear()
-                        },
-                        modifier = Modifier.width(200.dp).height(56.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                        )
-                    ) {
-                        Text(text = "Borrar Frases", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Button(
+                            onClick = {
+                                recordedPhrases.find { it.user.id == user?.id }?.phrases?.clear()
+                            },
+                            modifier = Modifier.width(200.dp).height(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                            )
+                        ) {
+                            Text(text = "Borrar Frases", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

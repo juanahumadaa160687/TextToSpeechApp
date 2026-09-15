@@ -20,11 +20,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationItemColors
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
@@ -33,6 +38,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.textspech.texttospeechapp.R
 import com.textspech.texttospeechapp.data.users
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +69,9 @@ fun PasswordRecoveryScreen(navController: NavController) {
 
     val state = rememberNavigationSuiteScaffoldState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     NavigationSuiteScaffold(
         modifier = Modifier.fillMaxSize(),
@@ -116,12 +127,28 @@ fun PasswordRecoveryScreen(navController: NavController) {
             }
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).nestedScroll(scrollBehavior.nestedScrollConnection),
+        Scaffold(
+
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState,
+                snackbar = { data ->
+                    Snackbar(
+                        data,
+                        actionOnNewLine = true,
+                        containerColor = colorResource(id = R.color.cta_color),
+                        contentColor = colorResource(id = R.color.secondary_text_color),
+                        actionContentColor = colorResource(id = R.color.secondary_text_color)
+                    )
+                },
+            )},
+
+        ) {innerPadding ->
+
+            Column(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
-        ) {
-            MediumTopAppBar(
+            ) {
+            TopAppBar(
                 title = {
                     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                         Text(
@@ -226,14 +253,32 @@ fun PasswordRecoveryScreen(navController: NavController) {
                                 val email = emailState.text
                                 val usuario = users.find { it.email == email }
 
-                                 if (email.isEmpty()) {
-                                    print("Por favor, ingrese un correo electrónico")
+                                if (email.isEmpty()) {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = "Por favor, ingrese un correo electrónico",
+                                            duration = SnackbarDuration.Short,
+                                            actionLabel = "Aceptar"
+                                        )
+                                    }
                                 }
                                 else if (!email.contains("@")) {
-                                    print("Por favor, ingrese un correo electrónico válido")
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = "Por favor, ingrese un correo electrónico válido",
+                                            duration = SnackbarDuration.Short,
+                                            actionLabel = "Aceptar"
+                                        )
+                                    }
                                 }
                                 else if (usuario == null) {
-                                    print("El correo electrónico no está registrado")
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = "El correo electrónico no está registrado",
+                                            duration = SnackbarDuration.Short,
+                                            actionLabel = "Aceptar"
+                                        )
+                                    }
                                 }
                                 else {
                                     navController.navigate("change-password?email=$email")
@@ -251,6 +296,8 @@ fun PasswordRecoveryScreen(navController: NavController) {
                     }
                 }
             }
+        }
+
         }
     }
 }

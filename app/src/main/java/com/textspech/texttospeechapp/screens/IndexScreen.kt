@@ -1,7 +1,10 @@
 package com.textspech.texttospeechapp.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -17,6 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -28,36 +34,38 @@ fun IndexScreen(navController: NavController) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = colorResource(id= R.color.secondary_color)
+        containerColor = Color.Transparent
+
     ) {innerPadding ->
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.background),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
-        ){
+        ) {
+            Button(
+                onClick = { navController.navigate("sign-in") },
+                modifier = Modifier.width(200.dp).height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = colorResource(id= R.color.background_color))
+            ) {
+                Text(text = "Comenzar", style = MaterialTheme.typography.titleMedium, color = colorResource(id= R.color.tertiary_color))
 
-            item{
-                Image(
-                    painter = painterResource(id = R.mipmap.logo),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .width(250.dp)
-                        .height(100.dp)
-                )
-
-                Spacer(modifier = Modifier.size(64.dp))
-
-                Button(
-                    onClick = { navController.navigate("sign-in") },
-                    modifier = Modifier.width(200.dp).height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id= R.color.background_color))
-                ) {
-                    Text(text = "Comenzar", style = MaterialTheme.typography.titleMedium, color = colorResource(id= R.color.tertiary_color))
-
-                }
-                Spacer(modifier = Modifier.size(64.dp))
             }
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

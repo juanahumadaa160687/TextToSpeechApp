@@ -26,10 +26,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationItemColors
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecureTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
@@ -41,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +61,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.textspech.texttospeechapp.R
+import com.textspech.texttospeechapp.data.users
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,6 +81,9 @@ fun SignInScreen(navController: NavController) {
 
     val state = rememberNavigationSuiteScaffoldState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     NavigationSuiteScaffold(
         modifier = Modifier.fillMaxSize(),
@@ -127,204 +139,236 @@ fun SignInScreen(navController: NavController) {
             }
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).nestedScroll(scrollBehavior.nestedScrollConnection),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            MediumTopAppBar(
-                title = {
-                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                        Text(
-                            text = "Bienvenido otra vez",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = colorResource(id = R.color.secondary_text_color)
-                        )
-                        Text(
-                            text = "Inicia sesión para continuar",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState,
+                snackbar = { data ->
+                    Snackbar(
+                        data,
+                        actionOnNewLine = true,
+                        containerColor = colorResource(id = R.color.cta_color),
+                        contentColor = colorResource(id = R.color.secondary_text_color),
+                        actionContentColor = colorResource(id = R.color.secondary_text_color)
+                    )
                 },
-                modifier = Modifier.fillMaxWidth().background(colorResource(id = R.color.surface_color)),
-                navigationIcon = {
-                    IconButton( onClick = { navController.popBackStack() } ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Volver",
-                            modifier = Modifier.size(24.dp),
-                            tint = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.cta_color),
-                    titleContentColor = colorResource(id = R.color.secondary_text_color),
-                    navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    actionIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    scrolledContainerColor = colorResource(id = R.color.cta_color),
-                    subtitleContentColor = colorResource(id = R.color.secondary_text_color)
-                ),
-                scrollBehavior = scrollBehavior,
-            )
+            )},
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        ) { innerPadding ->
+
+            Column(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(innerPadding)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-
+                verticalArrangement = Arrangement.Top
             ) {
-                item{
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.mipmap.logo),
-                            contentDescription = null,
-                            modifier = Modifier.width(250.dp).height(100.dp)
-                        )
-                    }
-                }
-
-                item {
-
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        TextField(
-                            state = emailState,
-                            label = { Text("Correo electrónico") },
-                            placeholder = { Text("Ingrese su correo electrónico") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_clear),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp).clickable(onClick = {emailState.clearText()}),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_email),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                }
-                item {
-
-                    Spacer(modifier = Modifier.size(36.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        SecureTextField(
-                            state = passwordState,
-                            label = { Text("Contraseña") },
-                            placeholder = { Text("Ingrese su contraseña") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = if (showPassword) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
-                                    contentDescription = if (showPassword) "Ocultar contraseña" else "Mostrar contraseña",
-                                    modifier = Modifier
-                                        .requiredSize(20.dp)
-                                        .clickable { showPassword = !showPassword },
-                                )
-                            },
-                            textObfuscationMode = if (showPassword) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_password),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                }
-                item {
-                    Spacer(modifier = Modifier.size(36.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        Button(
-                            onClick = {
-                                /*
-                                val email = emailState.text
-                                val password = passwordState.text
-                                val usuario = users.find { it.email == email && it.password == password }
-
-                                 if (email.isEmpty() || password.isEmpty()) {
-                                    print("Por favor, complete todos los campos")
-                                }
-                                else if (!email.contains("@")) {
-                                    print("Por favor, ingrese un correo electrónico válido")
-                                }
-                                else if (password.length < 8) {
-                                    print("Por favor, ingrese una contraseña válida")
-                                }
-                                else if (usuario == null) {
-                                    print("Correo electrónico o contraseña incorrectos")
-                                }
-                                else {
-                                    navController.navigate("home")
-                                }
-                                */
-                                navController.navigate("text-to-speech?user=1")
-
-                            },
-                            modifier = Modifier.width(300.dp).height(56.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.cta_color),
-                                contentColor = colorResource(id = R.color.secondary_text_color)
+                TopAppBar(
+                    title = {
+                        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                            Text(
+                                text = "Bienvenido otra vez",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = colorResource(id = R.color.secondary_text_color)
                             )
+                            Text(
+                                text = "Inicia sesión para continuar",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colorResource(id = R.color.secondary_text_color)
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                        .background(colorResource(id = R.color.surface_color)),
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = "Volver",
+                                modifier = Modifier.size(24.dp),
+                                tint = colorResource(id = R.color.secondary_text_color)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = colorResource(id = R.color.cta_color),
+                        titleContentColor = colorResource(id = R.color.secondary_text_color),
+                        navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        actionIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        scrolledContainerColor = colorResource(id = R.color.cta_color),
+                        subtitleContentColor = colorResource(id = R.color.secondary_text_color)
+                    ),
+                    scrollBehavior = scrollBehavior,
+                )
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+
+                ) {
+                    item {
+
+                        Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
                         ) {
-                            Text(text = "Iniciar sesión", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            TextField(
+                                state = emailState,
+                                label = { Text("Correo electrónico") },
+                                placeholder = { Text("Ingrese su correo electrónico") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_clear),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp)
+                                            .clickable(onClick = { emailState.clearText() }),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_email),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                    }
+                    item {
+
+                        Spacer(modifier = Modifier.size(36.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            SecureTextField(
+                                state = passwordState,
+                                label = { Text("Contraseña") },
+                                placeholder = { Text("Ingrese su contraseña") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = if (showPassword) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
+                                        contentDescription = if (showPassword) "Ocultar contraseña" else "Mostrar contraseña",
+                                        modifier = Modifier
+                                            .requiredSize(20.dp)
+                                            .clickable { showPassword = !showPassword },
+                                    )
+                                },
+                                textObfuscationMode = if (showPassword) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_password),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.size(36.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            Button(
+                                onClick = {
+
+                                    val email = emailState.text
+                                    val password = passwordState.text
+                                    val usuario =
+                                        users.find { it.email == email && it.password == password }
+
+                                    if (email.isEmpty() || password.isEmpty()) {
+
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Por favor, complete todos los campos",
+                                                actionLabel = "Aceptar",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+
+                                    } else if (!email.contains("@")) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Por favor, ingrese un correo electrónico válido",
+                                                actionLabel = "Aceptar",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    } else if (password.length < 8) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Por favor, ingrese una contraseña válida",
+                                                actionLabel = "Aceptar",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    } else if (usuario == null) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Correo electrónico o contraseña incorrectos",
+                                                actionLabel = "Aceptar",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    } else {
+                                        navController.navigate("text-to-speech?user=${usuario.id}")
+                                    }
+
+                                },
+                                modifier = Modifier.width(300.dp).height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.cta_color),
+                                    contentColor = colorResource(id = R.color.secondary_text_color)
+                                )
+                            ) {
+                                Text(
+                                    text = "Iniciar sesión",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }

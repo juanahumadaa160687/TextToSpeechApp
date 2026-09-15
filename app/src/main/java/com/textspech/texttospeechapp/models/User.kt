@@ -11,7 +11,7 @@ class User(
 
     ) {
     override fun toString(): String {
-        return "User(id=$id, firstname='$firstname', lastname='$lastname', email='$email')"
+        return "User(id=$id, firstname='$firstname', lastname='$lastname', email='$email', password='$password', phone='$phone')"
     }
 
 }

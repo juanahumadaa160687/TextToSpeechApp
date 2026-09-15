@@ -25,10 +25,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationItemColors
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecureTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
@@ -40,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +62,8 @@ import androidx.navigation.NavController
 import com.textspech.texttospeechapp.R
 import com.textspech.texttospeechapp.data.users
 import com.textspech.texttospeechapp.models.User
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,8 +76,8 @@ fun SignUpScreen(navController: NavController) {
     val passwordState = rememberTextFieldState("")
     val confirmPasswordState = rememberTextFieldState("")
 
-    var showPassword by remember { mutableStateOf(false) }
-    var showConfirmPassword by remember { mutableStateOf(false) }
+    var showContrasena by remember { mutableStateOf(false) }
+    var showConfirmContrasena by remember { mutableStateOf(false) }
 
     val navItems = listOf(
         NavItem("Iniciar\nSesión", "sign-in", R.drawable.ic_login),
@@ -78,6 +87,9 @@ fun SignUpScreen(navController: NavController) {
 
     val state = rememberNavigationSuiteScaffoldState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     NavigationSuiteScaffold(
         modifier = Modifier.fillMaxSize(),
@@ -133,376 +145,451 @@ fun SignUpScreen(navController: NavController) {
             }
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).nestedScroll(scrollBehavior.nestedScrollConnection),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            MediumTopAppBar(
-                title = {
-                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                        Text(
-                            text = "Bienvenido",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = colorResource(id = R.color.secondary_text_color)
-                        )
-                        Text(
-                            text = "Registrate para comenzar a utilizar la aplicación",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().background(colorResource(id = R.color.surface_color)),
-                navigationIcon = {
-                    IconButton( onClick = { navController.popBackStack() } ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Volver",
-                            modifier = Modifier.size(24.dp),
-                            tint = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.cta_color),
-                    titleContentColor = colorResource(id = R.color.secondary_text_color),
-                    navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    actionIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    scrolledContainerColor = colorResource(id = R.color.cta_color),
-                    subtitleContentColor = colorResource(id = R.color.secondary_text_color)
-                ),
-                scrollBehavior = scrollBehavior,
-            )
+        Scaffold(
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState,
+                snackbar = { data ->
+                    Snackbar(
+                        data,
+                        actionOnNewLine = true,
+                        containerColor = colorResource(id = R.color.cta_color),
+                        contentColor = colorResource(id = R.color.secondary_text_color),
+                        actionContentColor = colorResource(id = R.color.secondary_text_color)
+                    )
+                },
+            )},
+
+        ) {innerPadding ->
+
+            Column(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).nestedScroll(scrollBehavior.nestedScrollConnection).padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-
+                verticalArrangement = Arrangement.Top
             ) {
-                item {
-
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        TextField(
-                            state = firstnameState,
-                            label = { Text("Nombre") },
-                            placeholder = { Text("Ingrese su Nombre") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_clear),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp).clickable(onClick = {firstnameState.clearText()}),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_person),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                }
-                item {
-
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        TextField(
-                            state = lastnameState,
-                            label = { Text("Apellido") },
-                            placeholder = { Text("Ingrese su apellido") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_clear),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp).clickable(onClick = {lastnameState.clearText()}),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_person),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                }
-
-                item {
-
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        TextField(
-                            state = emailState,
-                            label = { Text("Correo electrónico") },
-                            placeholder = { Text("Ingrese su correo electrónico") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_clear),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp).clickable(onClick = {emailState.clearText()}),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_email),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                }
-                item {
-
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        TextField(
-                            state = phoneState,
-                            label = { Text("Teléfono") },
-                            placeholder = { Text("Ingrese su teléfono") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_clear),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp).clickable(onClick = {phoneState.clearText()}),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_phone),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                    tint = colorResource(id = R.color.primary_color)
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                }
-
-                item {
-
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        SecureTextField(
-                            state = passwordState,
-                            label = { Text("Contraseña") },
-                            placeholder = { Text("Ingrese su contraseña") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = if (showPassword) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
-                                    contentDescription = if (showPassword) "Ocultar contraseña" else "Mostrar contraseña",
-                                    modifier = Modifier
-                                        .requiredSize(20.dp)
-                                        .clickable { showPassword = !showPassword },
-                                )
-                            },
-                            textObfuscationMode = if (showPassword) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_password),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.width(350.dp).padding(top = 8.dp, start = 16.dp, end = 16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(text = "La  contraseña debe tener entre 8 y 16 caracteres, al menos un número y una letra", color = colorResource(id = R.color.tertiary_color), textAlign = TextAlign.End, fontSize = 12.sp)
-                    }
-                }
-                item {
-
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        SecureTextField(
-                            state = passwordState,
-                            label = { Text("Confirmar Contraseña") },
-                            placeholder = { Text("Confirma tu contraseña") },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTextColor = colorResource(id = R.color.primary_color),
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
-                                focusedLabelColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLabelColor = colorResource(id = R.color.primary_color),
-                                focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
-                                focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
-                                unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = if (showConfirmPassword) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
-                                    contentDescription = if (showConfirmPassword) "Ocultar contraseña" else "Mostrar contraseña",
-                                    modifier = Modifier
-                                        .requiredSize(20.dp)
-                                        .clickable { showConfirmPassword = !showConfirmPassword },
-                                )
-                            },
-                            textObfuscationMode = if (showConfirmPassword) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_password),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            },
-                            modifier = Modifier.width(350.dp).height(56.dp)
-                        )
-                    }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.size(32.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        Button(
-                            onClick = {
-                                val id = users.size + 1
-                                val newUser = User(id, firstnameState.toString(), lastnameState.toString(), emailState.toString(), passwordState.toString(), phoneState.toString())
-                                users.add(newUser)
-
-                                navController.navigate("sign-in")
-
-                            },
-                            modifier = Modifier.width(300.dp).height(56.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.cta_color),
-                                contentColor = colorResource(id = R.color.secondary_text_color)
+                TopAppBar(
+                    title = {
+                        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                            Text(
+                                text = "Bienvenido",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = colorResource(id = R.color.secondary_text_color)
                             )
-                        ) {
-                            Text(text = "Registrarse", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "Registrate para comenzar a utilizar la aplicación",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colorResource(id = R.color.secondary_text_color)
+                            )
                         }
+                    },
+                    modifier = Modifier.fillMaxWidth().background(colorResource(id = R.color.surface_color)),
+                    navigationIcon = {
+                        IconButton( onClick = { navController.popBackStack() } ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = "Volver",
+                                modifier = Modifier.size(24.dp),
+                                tint = colorResource(id = R.color.secondary_text_color)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = colorResource(id = R.color.cta_color),
+                        titleContentColor = colorResource(id = R.color.secondary_text_color),
+                        navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        actionIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        scrolledContainerColor = colorResource(id = R.color.cta_color),
+                        subtitleContentColor = colorResource(id = R.color.secondary_text_color)
+                    ),
+                    scrollBehavior = scrollBehavior,
+                )
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+
+                ) {
+                    item {
+
                         Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            TextField(
+                                state = firstnameState,
+                                label = { Text("Nombre") },
+                                placeholder = { Text("Ingrese su Nombre") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_clear),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp).clickable(onClick = {firstnameState.clearText()}),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_person),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                    }
+                    item {
+
+                        Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            TextField(
+                                state = lastnameState,
+                                label = { Text("Apellido") },
+                                placeholder = { Text("Ingrese su apellido") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_clear),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp).clickable(onClick = {lastnameState.clearText()}),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_person),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                    }
+
+                    item {
+
+                        Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            TextField(
+                                state = emailState,
+                                label = { Text("Correo electrónico") },
+                                placeholder = { Text("Ingrese su correo electrónico") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_clear),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp).clickable(onClick = {emailState.clearText()}),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_email),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                    }
+                    item {
+
+                        Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            TextField(
+                                state = phoneState,
+                                label = { Text("Teléfono") },
+                                placeholder = { Text("Ingrese su teléfono") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_clear),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp).clickable(onClick = {phoneState.clearText()}),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_phone),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                        tint = colorResource(id = R.color.primary_color)
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                    }
+
+                    item {
+
+                        Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            SecureTextField(
+                                state = passwordState,
+                                label = { Text("Contraseña") },
+                                placeholder = { Text("Ingrese su contraseña") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = if (showContrasena) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
+                                        contentDescription = if (showContrasena) "Ocultar contraseña" else "Mostrar contraseña",
+                                        modifier = Modifier
+                                            .requiredSize(20.dp)
+                                            .clickable { showContrasena = !showContrasena },
+                                    )
+                                },
+                                textObfuscationMode = if (showContrasena) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_password),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.width(350.dp).padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(text = "La  contraseña debe tener entre 8 y 16 caracteres, al menos un número y una letra", color = colorResource(id = R.color.tertiary_color), textAlign = TextAlign.End, fontSize = 12.sp)
+                        }
+                    }
+                    item {
+
+                        Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            SecureTextField(
+                                state = confirmPasswordState,
+                                label = { Text("Confirmar Contraseña") },
+                                placeholder = { Text("Confirma tu contraseña") },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTextColor = colorResource(id = R.color.primary_color),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedIndicatorColor = colorResource(id = R.color.primary_color),
+                                    focusedLabelColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLabelColor = colorResource(id = R.color.primary_color),
+                                    focusedLeadingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedLeadingIconColor = colorResource(id = R.color.primary_color),
+                                    focusedTrailingIconColor = colorResource(id = R.color.tertiary_color),
+                                    unfocusedTrailingIconColor = colorResource(id = R.color.primary_color),
+                                ),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = if (showConfirmContrasena) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
+                                        contentDescription = if (showConfirmContrasena) "Ocultar contraseña" else "Mostrar contraseña",
+                                        modifier = Modifier
+                                            .requiredSize(20.dp)
+                                            .clickable { showConfirmContrasena = !showConfirmContrasena },
+                                    )
+                                },
+                                textObfuscationMode = if (showConfirmContrasena) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_password),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                },
+                                modifier = Modifier.width(350.dp).height(56.dp)
+                            )
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.size(32.dp))
+
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (firstnameState.text.isEmpty() || lastnameState.text.isEmpty() || emailState.text.isEmpty() || phoneState.text.isEmpty()) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Por favor, complete todos los campos",
+                                                duration = SnackbarDuration.Short,
+                                                actionLabel = "Aceptar"
+                                            )
+                                        }
+                                    }
+
+                                    else if (!emailState.text.contains("@")) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "El correo electrónico no es válido",
+                                                duration = SnackbarDuration.Short,
+                                                actionLabel = "Aceptar"
+                                            )
+                                        }
+                                    }
+
+                                    else if (users.any { it.email == emailState.text }) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "El correo electrónico ya está registrado",
+                                                duration = SnackbarDuration.Short,
+                                                actionLabel = "Aceptar"
+                                            )
+                                        }
+                                    }
+
+                                    else if (passwordState.text.length !in 8..16) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "La contraseña debe tener entre 8 y 16 caracteres",
+                                                duration = SnackbarDuration.Short,
+                                                actionLabel = "Aceptar"
+                                            )
+                                        }
+                                    }
+                                    else if (!passwordState.text.any { it.isDigit() } || !passwordState.text.any { it.isLetter() }) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "La contraseña debe contener al menos un número y una letra",
+                                                duration = SnackbarDuration.Short,
+                                                actionLabel = "Aceptar"
+                                            )
+                                        }
+                                    }
+                                    else if (passwordState.text != confirmPasswordState.text) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Las contraseñas no coinciden",
+                                                duration = SnackbarDuration.Short,
+                                                actionLabel = "Aceptar"
+                                            )
+                                        }
+                                    }
+                                    else {
+                                        val id = users.size + 1
+                                        val newUser = User(id, firstnameState.toString(), lastnameState.toString(), emailState.toString(), passwordState.toString(), phoneState.toString())
+                                        users.add(newUser)
+                                        navController.navigate("sign-in")
+                                    }
+                                },
+                                modifier = Modifier.width(300.dp).height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.cta_color),
+                                    contentColor = colorResource(id = R.color.secondary_text_color)
+                                )
+                            ) {
+                                Text(text = "Registrarse", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(modifier = Modifier.size(32.dp))
+                        }
                     }
                 }
             }
+
         }
     }
 }

@@ -20,7 +20,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationItemColors
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
@@ -47,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.textspech.texttospeechapp.R
 import com.textspech.texttospeechapp.`class`.SpeechToTextManager
+import com.textspech.texttospeechapp.data.users
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,9 +59,11 @@ fun SpeechToTextScreen(
     user: Int?,
 ) {
 
+    val user = users.find { it.id == user }
+
     val navItems = listOf(
-        NavItem("Voz a\nTexto", "speech-to-text?user={id}", R.drawable.ic_microphone),
         NavItem("Texto a\nVoz", "text-to-speech?user={id}", R.drawable.ic_text),
+        NavItem("Voz a\nTexto", "speech-to-text?user={id}", R.drawable.ic_microphone),
         NavItem("Cerrar\nSesión", "index", R.drawable.ic_logout),
     )
 
@@ -124,87 +129,92 @@ fun SpeechToTextScreen(
             }
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).nestedScroll(scrollBehavior.nestedScrollConnection),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+        Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
-            MediumTopAppBar(
-                title = {
-                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            innerPadding ->
+
+            Column(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(innerPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                TopAppBar(
+                    title = {
                         Text(
-                            text = "Bienvenido otra vez",
+                            text = "Convierte voz a texto",
                             style = MaterialTheme.typography.titleLarge,
                             color = colorResource(id = R.color.secondary_text_color)
                         )
-                        Text(
-                            text = "Inicia sesión para continuar",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-                    .background(colorResource(id = R.color.surface_color)),
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Volver",
-                            modifier = Modifier.size(24.dp),
-                            tint = colorResource(id = R.color.secondary_text_color)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.cta_color),
-                    titleContentColor = colorResource(id = R.color.secondary_text_color),
-                    navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    actionIconContentColor = colorResource(id = R.color.secondary_text_color),
-                    scrolledContainerColor = colorResource(id = R.color.cta_color),
-                    subtitleContentColor = colorResource(id = R.color.secondary_text_color)
-                ),
-                scrollBehavior = scrollBehavior,
-            )
-        }
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                Text(
-                    text = when {
-                        speechState.isListening -> "Escuchando..."
-                        speechState.error != null -> "Error: ${speechState.error}"
-                        else -> "Presiona el botón para iniciar la grabación"
                     },
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.padding(24.dp))
-                Button(
-                    onClick = {
-                        if (hasPermission) {
-                            if (speechState.isListening) {
-                                speechManager.stopListening()
-                            } else {
-                                speechManager.startListening()
-                            }
-                        } else{
-                            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                    modifier = Modifier.fillMaxWidth()
+                        .background(colorResource(id = R.color.surface_color)),
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = "Volver",
+                                modifier = Modifier.size(24.dp),
+                                tint = colorResource(id = R.color.secondary_text_color)
+                            )
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(
+                    colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = colorResource(id = R.color.cta_color),
+                        titleContentColor = colorResource(id = R.color.secondary_text_color),
+                        navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        actionIconContentColor = colorResource(id = R.color.secondary_text_color),
+                        scrolledContainerColor = colorResource(id = R.color.cta_color),
+                        subtitleContentColor = colorResource(id = R.color.secondary_text_color)
+                    ),
+                    scrollBehavior = scrollBehavior,
+                )
+            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    Text(
+                        text = when {
+                            speechState.isListening -> "Escuchando..."
+                            speechState.error != null -> "Error: ${speechState.error}"
+                            else -> "Presiona el botón para iniciar la grabación"
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = when {
+                            speechState.isListening -> colorResource(id = R.color.cta_color)
+                            speechState.error != null -> colorResource(id = R.color.error_color)
+                            else -> colorResource(id = R.color.secondary_text_color)
+                        }
                     )
-                ) {
-                    Text( text = if (speechState.isListening) "Detener grabación" else "Hablar")
+                }
+                item {
+                    Spacer(modifier = Modifier.padding(24.dp))
+                    Button(
+                        onClick = {
+                            if (hasPermission) {
+                                if (speechState.isListening) {
+                                    speechManager.stopListening()
+                                } else {
+                                    speechManager.startListening()
+                                }
+                            } else{
+                                permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.cta_color),
+                        )
+                    ) {
+                        Text( text = if (speechState.isListening) "Detener grabación" else "Hablar")
+                    }
                 }
             }
+
         }
     }
 }
