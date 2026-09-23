@@ -20,33 +20,48 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.textspech.texttospeechapp.R
+import com.textspech.texttospeechapp.ui.theme.gradient_colors
 
 @Composable
 fun IndexScreen(navController: NavController) {
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize(),
         containerColor = Color.Transparent
 
     ) {innerPadding ->
 
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = gradient_colors,
+                        startY = 0f,
+                        endY = Float.POSITIVE_INFINITY,
+                        tileMode = TileMode.Clamp
+                    )
+                )
+                .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.background),
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                modifier = Modifier
+                    .size(300.dp)
+                    .padding(16.dp),
             )
         }
 

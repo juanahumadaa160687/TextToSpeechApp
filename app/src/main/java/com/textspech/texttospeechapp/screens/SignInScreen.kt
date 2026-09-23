@@ -15,11 +15,14 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,7 +83,6 @@ fun SignInScreen(navController: NavController) {
     )
 
     val state = rememberNavigationSuiteScaffoldState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -155,49 +157,55 @@ fun SignInScreen(navController: NavController) {
         ) { innerPadding ->
 
             Column(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(innerPadding)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                TopAppBar(
-                    title = {
-                        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                            Text(
-                                text = "Bienvenido otra vez",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = colorResource(id = R.color.secondary_text_color)
-                            )
-                            Text(
-                                text = "Inicia sesión para continuar",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = colorResource(id = R.color.secondary_text_color)
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                        .background(colorResource(id = R.color.surface_color)),
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().height(110.dp),
+                    shape = RoundedCornerShape(bottomEnd = 110.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = colorResource(id = R.color.cta_color)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxSize().padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        IconButton(
+                            onClick = { navController.popBackStack() }
+                        ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_back),
-                                contentDescription = "Volver",
-                                modifier = Modifier.size(24.dp),
-                                tint = colorResource(id = R.color.secondary_text_color)
+                                contentDescription = null,
+                                tint = colorResource(id = R.color.secondary_text_color),
+                                modifier = Modifier.size(24.dp)
                             )
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = colorResource(id = R.color.cta_color),
-                        titleContentColor = colorResource(id = R.color.secondary_text_color),
-                        navigationIconContentColor = colorResource(id = R.color.secondary_text_color),
-                        actionIconContentColor = colorResource(id = R.color.secondary_text_color),
-                        scrolledContainerColor = colorResource(id = R.color.cta_color),
-                        subtitleContentColor = colorResource(id = R.color.secondary_text_color)
-                    ),
-                    scrollBehavior = scrollBehavior,
-                )
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Bienvenido",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = colorResource(id = R.color.secondary_text_color),
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                            Spacer(modifier = Modifier.size(4.dp))
 
+                            Text(
+                                text = "Inicia sesión para continuar",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = colorResource(id = R.color.secondary_text_color),
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                        }
+                    }
+                }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                         .background(MaterialTheme.colorScheme.background),
@@ -205,15 +213,13 @@ fun SignInScreen(navController: NavController) {
                     verticalArrangement = Arrangement.Center
 
                 ) {
+
                     item {
-
-                        Spacer(modifier = Modifier.size(32.dp))
-
                         Column(
                             modifier = Modifier.fillMaxSize()
-                                .padding(top = 32.dp, start = 16.dp, end = 16.dp),
+                                .padding(start = 16.dp, end = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Bottom
+                            verticalArrangement = Arrangement.Center
                         ) {
                             TextField(
                                 state = emailState,
@@ -255,13 +261,10 @@ fun SignInScreen(navController: NavController) {
                         }
                     }
                     item {
-
-                        Spacer(modifier = Modifier.size(36.dp))
-
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
+                            modifier = Modifier.fillMaxSize().padding(top = 36.dp, start = 16.dp, end = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Bottom
+                            verticalArrangement = Arrangement.Center
                         ) {
                             SecureTextField(
                                 state = passwordState,
@@ -303,12 +306,12 @@ fun SignInScreen(navController: NavController) {
                         }
                     }
                     item {
-                        Spacer(modifier = Modifier.size(36.dp))
+                        Spacer(modifier = Modifier.size(40.dp))
 
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
+                            modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 28.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Bottom
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Button(
                                 onClick = {
